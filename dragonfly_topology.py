@@ -2,8 +2,10 @@ import requests
 import argparse
 
 # NetBox API settings
-NETBOX_URL = "http://localhost:8000"
-NETBOX_TOKEN = "" # TODO API token generated in NetBox
+NETBOX_URL = "http://127.0.0.1"
+NETBOX_TOKEN = "b10a04b99fc3ee4f9b160792fa5dae88d49594ec" # TODO API token generated in NetBox
+
+cable_price_per_metr = 11906 // 3 # Mellanox MFS1S50-H020V
 
 # Site, device roles and types defined in NetBox
 site_id = 0
@@ -88,11 +90,14 @@ def create_manufacturer(name, slug):
 
 
 # Create device type using NetBox API
-def create_device_type(model, slug, manufacturer_id):
+def create_device_type(model, slug, manufacturer_id, price):
     device_type = {
         "model": model,
         "slug": slug,
         "manufacturer": manufacturer_id,
+        "custom_fields": {
+            "price": price
+        }
     }
 
     return netbox_create(f"device type {model}", "/api/dcim/device-types/", device_type)
@@ -104,10 +109,7 @@ def create_device(name, type_id, role_id):
         "name": name,
         "device_type": type_id,
         "device_role": role_id,
-        "site": site_id,
-        "custom_fields": {
-            "price": 0.0
-        }
+        "site": site_id
     }
 
     return netbox_create(f"device {name}", "/api/dcim/devices/", device)
@@ -125,7 +127,7 @@ def create_interface(name, device_id):
 
 
 # Create cable between two interfaces using NetBox API
-def create_cable(interface1_id, interface2_id):
+def create_cable(interface1_id, interface2_id, length, price_per_metr):
     cable = {
         "a_terminations": [
             {
@@ -140,6 +142,11 @@ def create_cable(interface1_id, interface2_id):
             },
         ],
         "status": "connected",
+        "length": length,
+        "length_unit": "m",
+        "custom_fields": {
+            "price": length * price_per_metr
+        }
     }
 
     return netbox_create(f"connection between {interface1_id} and {interface2_id} interfaces", "/api/dcim/cables/", cable)
@@ -172,7 +179,8 @@ def connect_host(g_id, r_id, h_id):
     router_int_id = create_interface(f"int-g{g_id}-r{r_id}-h{h_id}", router_id)
     host_int_id = create_interface(f"int-g{g_id}-h{h_id}-r{r_id}", host_id)
 
-    create_cable(router_int_id, host_int_id)
+    global cable_price_per_metr
+    create_cable(router_int_id, host_int_id, 10, cable_price_per_metr)
 
 
 # Connect two routers
@@ -184,7 +192,8 @@ def connect_routers(g1_id, r1_id, g2_id, r2_id):
     router1_int_id = create_interface(f"int-g{g1_id}-r{r1_id}-g{g2_id}-r{r2_id}", router1_id)
     router2_int_id = create_interface(f"int-g{g2_id}-r{r2_id}-g{g1_id}-r{r1_id}", router2_id)
 
-    create_cable(router1_int_id, router2_int_id)
+    global cable_price_per_metr
+    create_cable(router1_int_id, router2_int_id, 1000, cable_price_per_metr)
 
 
 def generate_dragonfly(p, a, h):
@@ -219,13 +228,14 @@ def generate_dragonfly(p, a, h):
 def setup_models():
     global site_id, router_role_id, host_role_id, router_device_type_id, host_device_type_id
 
-    create_custom_field("price", "decimal", ["dcim.cable", "dcim.device"])
+    create_custom_field("price", "decimal", ["dcim.cable", "dcim.devicetype"])
     site_id = create_site("Dragonfly site", "dragonfly-site")
     router_role_id = create_device_role("Router", "router")
     host_role_id = create_device_role("Host", "host")
-    manufacturer_id = create_manufacturer("Manufacturer", "manufacturer")
-    router_device_type_id = create_device_type("Router", "router", manufacturer_id)
-    host_device_type_id = create_device_type("Host", "host", manufacturer_id)
+    nvidia_id = create_manufacturer("Mellanox", "Nvidia")
+    dell_id = create_manufacturer("Dell", "Dell")
+    router_device_type_id = create_device_type("Mellanos MQM8790-HS2F", "Router_Mellanos_MQM8790", nvidia_id, 71472) #  US$18,344.00 (PLN zł71,472.17) 
+    host_device_type_id = create_device_type("Dell PowerEdge R450", "Host_Dell_PowerEdge", dell_id, 21000)   #PLN 21000 zł
 
 
 def find_models_ids():
@@ -255,3 +265,11 @@ if __name__ == "__main__":
         find_models_ids()
     
     generate_dragonfly(args.hosts, args.routers, args.channels)
+
+
+'''
+ToDo:
+- podać długośći i typy kabli (create_cable)
+- setup models - dodać konkretne urządzenia, cena w komentarzu
+- 
+'''
