@@ -3,7 +3,7 @@ import argparse
 
 # NetBox API settings
 NETBOX_URL = "http://127.0.0.1"
-NETBOX_TOKEN = "b10a04b99fc3ee4f9b160792fa5dae88d49594ec" # TODO API token generated in NetBox
+NETBOX_TOKEN = "" # TODO API token generated in NetBox
 
 # Site, device roles and types defined in NetBox
 site_id = 0
