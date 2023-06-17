@@ -5,8 +5,6 @@ import argparse
 NETBOX_URL = "http://127.0.0.1"
 NETBOX_TOKEN = "b10a04b99fc3ee4f9b160792fa5dae88d49594ec" # TODO API token generated in NetBox
 
-cable_price_per_metr = 11906 // 3 # Mellanox MFS1S50-H020V
-
 # Site, device roles and types defined in NetBox
 site_id = 0
 router_role_id = 0
@@ -127,8 +125,9 @@ def create_interface(name, device_id):
 
 
 # Create cable between two interfaces using NetBox API
-def create_cable(interface1_id, interface2_id, length, price_per_metr):
+def create_cable(interface1_id, interface2_id, length, price_per_metr, description, cable_type):
     cable = {
+        "type": cable_type,
         "a_terminations": [
             {
                 "object_type": "dcim.interface",
@@ -144,6 +143,7 @@ def create_cable(interface1_id, interface2_id, length, price_per_metr):
         "status": "connected",
         "length": length,
         "length_unit": "m",
+        "description": description,
         "custom_fields": {
             "price": length * price_per_metr
         }
@@ -179,8 +179,7 @@ def connect_host(g_id, r_id, h_id):
     router_int_id = create_interface(f"int-g{g_id}-r{r_id}-h{h_id}", router_id)
     host_int_id = create_interface(f"int-g{g_id}-h{h_id}-r{r_id}", host_id)
 
-    global cable_price_per_metr
-    create_cable(router_int_id, host_int_id, 10, cable_price_per_metr)
+    create_cable(router_int_id, host_int_id, 10, price_per_metr=40, description="Connection between hosts", cable_type="cat8") #UGREEN RJ45 Cat.8 Ethernet 1m
 
 
 # Connect two routers
@@ -192,8 +191,7 @@ def connect_routers(g1_id, r1_id, g2_id, r2_id):
     router1_int_id = create_interface(f"int-g{g1_id}-r{r1_id}-g{g2_id}-r{r2_id}", router1_id)
     router2_int_id = create_interface(f"int-g{g2_id}-r{r2_id}-g{g1_id}-r{r1_id}", router2_id)
 
-    global cable_price_per_metr
-    create_cable(router1_int_id, router2_int_id, 1000, cable_price_per_metr)
+    create_cable(router1_int_id, router2_int_id, 1000, price_per_metr=3968, description="Connection between routers", cable_type="aoc") #Mellanox MFS1S50-H020V
 
 
 def generate_dragonfly(p, a, h):
@@ -265,11 +263,3 @@ if __name__ == "__main__":
         find_models_ids()
     
     generate_dragonfly(args.hosts, args.routers, args.channels)
-
-
-'''
-ToDo:
-- podać długośći i typy kabli (create_cable)
-- setup models - dodać konkretne urządzenia, cena w komentarzu
-- 
-'''
