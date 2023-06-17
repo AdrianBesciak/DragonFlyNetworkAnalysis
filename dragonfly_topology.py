@@ -239,4 +239,4 @@ if __name__ == "__main__":
     else:
         find_models_ids()
     
-    generate_dragonfly(args.hosts, args.routers, args.channels, g)
+    generate_dragonfly(args.hosts, args.routers, args.channels)
