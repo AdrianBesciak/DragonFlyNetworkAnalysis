@@ -1,22 +1,16 @@
 import requests
-
-# Dragonfly topology parameters
-p = 2  # Number of hosts connected to each router
-a = 4  # Number of routers in each group
-h = 2  # Number of channels within each router used to connect to other groups
-g = a * h + 1  # Number of groups in the system
-# Balanced when a = 2 * p = 2 * h
+import argparse
 
 # NetBox API settings
 NETBOX_URL = "http://localhost:8000"
 NETBOX_TOKEN = "" # TODO API token generated in NetBox
 
 # Site, device roles and types defined in NetBox
-site_id = 1
-router_role_id = 1
-host_role_id = 2
-router_device_type_id = 1
-host_device_type_id = 2
+site_id = 0
+router_role_id = 0
+host_role_id = 0
+router_device_type_id = 0
+host_device_type_id = 0
 
 # Initialize the requests session
 session = requests.Session()
@@ -29,6 +23,70 @@ session.headers.update({
 routers = {}
 
 
+# Create generic resource using NetBox API
+def netbox_create(name, path, model):
+    response = session.post(f"{NETBOX_URL}{path}", json=model)
+    if response.status_code >= 400:
+        print(f"Error creating {name}: {response.text}")
+        return
+
+    print(f"Created {name} with id {response.json()['id']}")
+
+    return response.json()["id"]
+
+
+# Get id of generic resource using NetBox API
+def netbox_get_id(name, path):
+    response = session.get(f"{NETBOX_URL}{path}")
+    if response.status_code >= 400:
+        print(f"Error getting {name}: {response.text}")
+        return
+
+    return response.json()["results"][0]["id"]
+
+
+# Create site using NetBox API
+def create_site(name, slug):
+    site = {
+        "name": name,
+        "slug": slug
+    }
+
+    return netbox_create(f"site {name}", "/api/dcim/sites/", site)
+
+
+# Create device role using NetBox API
+def create_device_role(name, slug, color="888888"):
+    device_role = {
+        "name": name,
+        "slug": slug,
+        "color": color
+    }
+
+    return netbox_create(f"device role {name}", "/api/dcim/device-roles/", device_role)
+
+
+# Create manufacturer using NetBox API
+def create_manufacturer(name, slug):
+    device_role = {
+        "name": name,
+        "slug": slug
+    }
+
+    return netbox_create(f"manufacturer {name}", "/api/dcim/manufacturers/", device_role)
+
+
+# Create device type using NetBox API
+def create_device_type(model, slug, manufacturer_id):
+    device_type = {
+        "model": model,
+        "slug": slug,
+        "manufacturer": manufacturer_id,
+    }
+
+    return netbox_create(f"device type {model}", "/api/dcim/device-types/", device_type)
+
+
 # Create device using NetBox API
 def create_device(name, type_id, role_id):
     device = {
@@ -38,15 +96,7 @@ def create_device(name, type_id, role_id):
         "site": site_id,
     }
 
-    response = session.post(f"{NETBOX_URL}/api/dcim/devices/", json=device)
-    if response.status_code >= 400:
-        print(f"Error creating device {name}: {response.text}")
-        return
-
-    id = response.json()["id"]
-    print(f"Created device {name} with id {id}")
-
-    return id
+    return netbox_create(f"device {name}", "/api/dcim/devices/", device)
 
 
 # Create interface for device using NetBox API
@@ -57,15 +107,7 @@ def create_interface(name, device_id):
         "device": device_id,
     }
 
-    response = session.post(f"{NETBOX_URL}/api/dcim/interfaces/", json=interface)
-    if response.status_code >= 400:
-        print(f"Error creating interface {name}: {response.text}")
-        return
-
-    id = response.json()["id"]
-    print(f"Created interface {name} with id {id}")
-
-    return id
+    return netbox_create(f"interface {name}", "/api/dcim/interfaces/", interface)
 
 
 # Create cable between two interfaces using NetBox API
@@ -86,15 +128,7 @@ def create_cable(interface1_id, interface2_id):
         "status": "connected",
     }
 
-    response = session.post(f"{NETBOX_URL}/api/dcim/cables/", json=cable)
-    if response.status_code >= 400:
-        print(f"Error creating connection between {interface1_id} and {interface2_id} interfaces: {response.text}")
-        return
-
-    id = response.json()["id"]
-    print(f"Created connection between {interface1_id} and {interface2_id} interfaces with id {id}")
-
-    return id
+    return netbox_create(f"connection between {interface1_id} and {interface2_id} interfaces", "/api/dcim/cables/", cable)
 
 
 def create_router(g_id, r_id):
@@ -139,7 +173,14 @@ def connect_routers(g1_id, r1_id, g2_id, r2_id):
     create_cable(router1_int_id, router2_int_id)
 
 
-def generate_dragonfly(p, a, h, g):
+def generate_dragonfly(p, a, h):
+    # Dragonfly topology parameters
+    # p - Number of hosts connected to each router
+    # a - Number of routers in each group
+    # h - Number of channels within each router used to connect to other groups
+    # Balanced when a = 2 * p = 2 * h
+    g = a * h + 1 # Number of groups in the system
+
     for g_id in range(g):
         for r_id in range(a):
             create_router(g_id, r_id)
@@ -161,5 +202,41 @@ def generate_dragonfly(p, a, h, g):
                 connect_host(g_id, r_id, h_id)
 
 
+def setup_models():
+    global site_id, router_role_id, host_role_id, router_device_type_id, host_device_type_id
+
+    site_id = create_site("Dragonfly site", "dragonfly-site")
+    router_role_id = create_device_role("Router", "router")
+    host_role_id = create_device_role("Host", "host")
+    manufacturer_id = create_manufacturer("Manufacturer", "manufacturer")
+    router_device_type_id = create_device_type("Router", "router", manufacturer_id)
+    host_device_type_id = create_device_type("Host", "host", manufacturer_id)
+
+
+def find_models_ids():
+    global site_id, router_role_id, host_role_id, router_device_type_id, host_device_type_id
+
+    site_id = netbox_get_id("site", "/api/dcim/sites?slug=dragonfly-site")
+    router_role_id = netbox_get_id("router role", "/api/dcim/device-roles?slug=router")
+    host_role_id = netbox_get_id("host role", "/api/dcim/device-roles?slug=host")
+    router_device_type_id = netbox_get_id("router type", "/api/dcim/device-types?slug=router")
+    host_device_type_id = netbox_get_id("host type", "/api/dcim/device-types?slug=host")
+
+
+def parse_command_line():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--setup", help="Setup sites, manufacturers, device roles and device types", action="store_true")
+    parser.add_argument("--hosts", help="Number of hosts connected to each router", default=2, type=int)
+    parser.add_argument("--routers", help="Number of routers in each group", default=4, type=int)
+    parser.add_argument("--channels", help="Number of channels within each router used to connect to other groups", default=2, type=int)
+    return parser.parse_known_args()[0]
+
+
 if __name__ == "__main__":
-    generate_dragonfly(p, a, h, g)
+    args = parse_command_line()
+    if args.setup:
+        setup_models()
+    else:
+        find_models_ids()
+    
+    generate_dragonfly(args.hosts, args.routers, args.channels, g)
