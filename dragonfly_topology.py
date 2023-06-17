@@ -45,6 +45,17 @@ def netbox_get_id(name, path):
     return response.json()["results"][0]["id"]
 
 
+# Create custom field using NetBox API
+def create_custom_field(name, field_type, content_types):
+    custom_field = {
+        "name": name,
+        "type": field_type,
+        "content_types": content_types
+    }
+
+    return netbox_create(f"custom field {name}", "/api/extras/custom-fields/", custom_field)
+
+
 # Create site using NetBox API
 def create_site(name, slug):
     site = {
@@ -94,6 +105,9 @@ def create_device(name, type_id, role_id):
         "device_type": type_id,
         "device_role": role_id,
         "site": site_id,
+        "custom_fields": {
+            "price": 0.0
+        }
     }
 
     return netbox_create(f"device {name}", "/api/dcim/devices/", device)
@@ -205,6 +219,7 @@ def generate_dragonfly(p, a, h):
 def setup_models():
     global site_id, router_role_id, host_role_id, router_device_type_id, host_device_type_id
 
+    create_custom_field("price", "decimal", ["dcim.cable", "dcim.device"])
     site_id = create_site("Dragonfly site", "dragonfly-site")
     router_role_id = create_device_role("Router", "router")
     host_role_id = create_device_role("Host", "host")
