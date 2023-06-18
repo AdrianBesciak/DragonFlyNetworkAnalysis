@@ -1,5 +1,7 @@
 import requests
 import argparse
+import string
+import random
 
 # NetBox API settings
 NETBOX_URL = "http://127.0.0.1"
@@ -21,10 +23,14 @@ session.headers.update({
 
 # Holds ids of created routers and hosts
 routers = {}
+# Tag of the generated topology
+tag = None
 
 
 # Create generic resource using NetBox API
-def netbox_create(name, path, model):
+def netbox_create(name, path, model, put_tags=False):
+    if put_tags:
+        model["tags"] = [tag]
     response = session.post(f"{NETBOX_URL}{path}", json=model)
     if response.status_code >= 400:
         print(f"Error creating {name}: {response.text}")
@@ -46,14 +52,31 @@ def netbox_get_id(name, path):
 
 
 # Create custom field using NetBox API
-def create_custom_field(name, field_type, content_types):
+def create_custom_field(name, field_type, content_types, validation_minimum=0):
     custom_field = {
         "name": name,
         "type": field_type,
-        "content_types": content_types
+        "content_types": content_types,
+        "validation_minimum": validation_minimum
     }
 
     return netbox_create(f"custom field {name}", "/api/extras/custom-fields/", custom_field)
+
+
+# Create random tag using NetBox API
+def create_random_tag():
+    def generate_random_id():
+        return ''.join(random.choice(string.ascii_letters) for i in range(6))
+
+    tag_id = generate_random_id()
+    tag = {
+        "name": f"Dragonfly {tag_id}",
+        "slug": f"dragonfly-{tag_id}"
+    }
+
+    netbox_create(f"tag {tag['name']}", "/api/extras/tags/", tag)
+
+    return tag
 
 
 # Create site using NetBox API
@@ -79,12 +102,12 @@ def create_device_role(name, slug, color="888888"):
 
 # Create manufacturer using NetBox API
 def create_manufacturer(name, slug):
-    device_role = {
+    manufacturer = {
         "name": name,
         "slug": slug
     }
 
-    return netbox_create(f"manufacturer {name}", "/api/dcim/manufacturers/", device_role)
+    return netbox_create(f"manufacturer {name}", "/api/dcim/manufacturers/", manufacturer)
 
 
 # Create device type using NetBox API
@@ -110,7 +133,7 @@ def create_device(name, type_id, role_id):
         "site": site_id
     }
 
-    return netbox_create(f"device {name}", "/api/dcim/devices/", device)
+    return netbox_create(f"device {name}", "/api/dcim/devices/", device, put_tags=True)
 
 
 # Create interface for device using NetBox API
@@ -121,11 +144,11 @@ def create_interface(name, device_id):
         "device": device_id,
     }
 
-    return netbox_create(f"interface {name}", "/api/dcim/interfaces/", interface)
+    return netbox_create(f"interface {name}", "/api/dcim/interfaces/", interface, put_tags=True)
 
 
 # Create cable between two interfaces using NetBox API
-def create_cable(interface1_id, interface2_id, length, price_per_metr, description, cable_type):
+def create_cable(interface1_id, interface2_id, length, price_per_meter, description, cable_type):
     cable = {
         "type": cable_type,
         "a_terminations": [
@@ -145,11 +168,11 @@ def create_cable(interface1_id, interface2_id, length, price_per_metr, descripti
         "length_unit": "m",
         "description": description,
         "custom_fields": {
-            "price": length * price_per_metr
+            "price": length * price_per_meter
         }
     }
 
-    return netbox_create(f"connection between {interface1_id} and {interface2_id} interfaces", "/api/dcim/cables/", cable)
+    return netbox_create(f"connection between {interface1_id} and {interface2_id} interfaces", "/api/dcim/cables/", cable, put_tags=True)
 
 
 def create_router(g_id, r_id):
@@ -179,7 +202,7 @@ def connect_host(g_id, r_id, h_id):
     router_int_id = create_interface(f"int-g{g_id}-r{r_id}-h{h_id}", router_id)
     host_int_id = create_interface(f"int-g{g_id}-h{h_id}-r{r_id}", host_id)
 
-    create_cable(router_int_id, host_int_id, 10, price_per_metr=40, description="Connection between hosts", cable_type="cat8") #UGREEN RJ45 Cat.8 Ethernet 1m
+    create_cable(router_int_id, host_int_id, 10, price_per_meter=40, description="UGREEN RJ45 Cat.8 Ethernet", cable_type="cat8")
 
 
 # Connect two routers
@@ -191,7 +214,7 @@ def connect_routers(g1_id, r1_id, g2_id, r2_id):
     router1_int_id = create_interface(f"int-g{g1_id}-r{r1_id}-g{g2_id}-r{r2_id}", router1_id)
     router2_int_id = create_interface(f"int-g{g2_id}-r{r2_id}-g{g1_id}-r{r1_id}", router2_id)
 
-    create_cable(router1_int_id, router2_int_id, 1000, price_per_metr=3968, description="Connection between routers", cable_type="aoc") #Mellanox MFS1S50-H020V
+    create_cable(router1_int_id, router2_int_id, 1000, price_per_meter=3968, description="Mellanox MFS1S50-H020V", cable_type="aoc")
 
 
 def generate_dragonfly(p, a, h):
@@ -262,4 +285,6 @@ if __name__ == "__main__":
     else:
         find_models_ids()
     
+    tag = create_random_tag()
+
     generate_dragonfly(args.hosts, args.routers, args.channels)
