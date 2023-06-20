@@ -2,9 +2,10 @@ import requests
 import argparse
 import string
 import random
+import sys
 
 # NetBox API settings
-NETBOX_URL = "http://127.0.0.1"
+NETBOX_URL = "http://127.0.0.1:8000"
 NETBOX_TOKEN = "" # TODO API token generated in NetBox
 
 # Site, device roles and types defined in NetBox
@@ -39,6 +40,29 @@ def netbox_create(name, path, model, put_tags=False):
     print(f"Created {name} with id {response.json()['id']}")
 
     return response.json()["id"]
+
+
+def netbox_get(path, query = ""):
+    if query:
+        response = session.get(f"{NETBOX_URL}{path}", json=query)
+    else:
+         response = session.get(f"{NETBOX_URL}{path}")
+    if response.status_code >= 400:
+        print(f"Error creating {name}: {response.text}")
+        return
+    return response.json()["results"]
+
+
+def get_cable_list():
+    return netbox_get("/api/dcim/cables/?limit=1000")
+
+
+def get_device_list():
+    return netbox_get("/api/dcim/devices/?limit=1000")
+
+
+def get_device_types():
+    return netbox_get("/api/dcim/device-types")
 
 
 # Get id of generic resource using NetBox API
@@ -268,6 +292,28 @@ def find_models_ids():
     router_device_type_id = netbox_get_id("router type", "/api/dcim/device-types?slug=router")
     host_device_type_id = netbox_get_id("host type", "/api/dcim/device-types?slug=host")
 
+def calculate_costs():
+    cables = get_cable_list()
+    cable_cost = 0
+    for cable in cables:
+        cable_cost += cable["custom_fields"]["price"]
+        
+    device_types = get_device_types()
+    device_map = {}
+    for device_type in device_types:
+        device_map[device_type["id"]] = device_type["custom_fields"]["price"]
+        
+    devices = get_device_list()
+    router_cost = 0
+    host_cost = 0
+    for device in devices:
+        device_cost = device_map[device["device_type"]["id"]]
+        if device["device_role"]["slug"] == "host":
+            host_cost += device_cost
+        if device["device_role"]["slug"] == "router":
+            router_cost += device_cost
+    return {"cable_cost": cable_cost, "host_cost": host_cost, "router_cost": router_cost}
+
 
 def parse_command_line():
     parser = argparse.ArgumentParser()
@@ -275,11 +321,17 @@ def parse_command_line():
     parser.add_argument("--hosts", help="Number of hosts connected to each router", default=2, type=int)
     parser.add_argument("--routers", help="Number of routers in each group", default=4, type=int)
     parser.add_argument("--channels", help="Number of channels within each router used to connect to other groups", default=2, type=int)
+    parser.add_argument("--costs", help="Print information about cost of the network", action="store_true")
     return parser.parse_known_args()[0]
 
 
 if __name__ == "__main__":
     args = parse_command_line()
+    
+    if args.costs:
+        print(calculate_costs())
+        sys.exit()
+    
     if args.setup:
         setup_models()
     else:
