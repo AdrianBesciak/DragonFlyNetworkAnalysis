@@ -279,8 +279,8 @@ def setup_models():
     host_role_id = create_device_role("Host", "host")
     nvidia_id = create_manufacturer("Mellanox", "Nvidia")
     dell_id = create_manufacturer("Dell", "Dell")
-    router_device_type_id = create_device_type("Mellanos MQM8790-HS2F", "Router_Mellanos_MQM8790", nvidia_id, 71472) #  US$18,344.00 (PLN zł71,472.17) 
-    host_device_type_id = create_device_type("Dell PowerEdge R450", "Host_Dell_PowerEdge", dell_id, 21000)   #PLN 21000 zł
+    router_device_type_id = create_device_type("Mellanox MQM8790-HS2F", "Router_Mellanos_MQM8790", nvidia_id, 71472) # US$18,344.00
+    host_device_type_id = create_device_type("Dell PowerEdge R450", "Host_Dell_PowerEdge", dell_id, 21000)
 
 
 def find_models_ids():
