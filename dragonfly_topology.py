@@ -42,27 +42,27 @@ def netbox_create(name, path, model, put_tags=False):
     return response.json()["id"]
 
 
-def netbox_get(path, query = ""):
+def netbox_get(name, path, query = ""):
     if query:
         response = session.get(f"{NETBOX_URL}{path}", json=query)
     else:
          response = session.get(f"{NETBOX_URL}{path}")
     if response.status_code >= 400:
-        print(f"Error creating {name}: {response.text}")
+        print(f"Error getting {name}: {response.text}")
         return
     return response.json()["results"]
 
 
 def get_cable_list():
-    return netbox_get("/api/dcim/cables/?limit=1000")
+    return netbox_get("cables", "/api/dcim/cables/?site=dragonfly-site&limit=1000")
 
 
 def get_device_list():
-    return netbox_get("/api/dcim/devices/?limit=1000")
+    return netbox_get("devices", "/api/dcim/devices/?site=dragonfly-site&limit=1000")
 
 
 def get_device_types():
-    return netbox_get("/api/dcim/device-types")
+    return netbox_get("device types", "/api/dcim/device-types/?site=dragonfly-site")
 
 
 # Get id of generic resource using NetBox API
@@ -291,6 +291,7 @@ def find_models_ids():
     host_role_id = netbox_get_id("host role", "/api/dcim/device-roles?slug=host")
     router_device_type_id = netbox_get_id("router type", "/api/dcim/device-types?slug=router")
     host_device_type_id = netbox_get_id("host type", "/api/dcim/device-types?slug=host")
+
 
 def calculate_costs():
     cables = get_cable_list()
