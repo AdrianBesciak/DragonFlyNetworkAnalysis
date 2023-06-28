@@ -7,8 +7,8 @@ import sys
 # NetBox API settings
 NETBOX_URL = "http://127.0.0.1"
 
-from generatedNetboxToken import NETBOX_TOKEN
-#NETBOX_TOKEN = "" # TODO API token generated in NetBox
+# from generatedNetboxToken import NETBOX_TOKEN
+NETBOX_TOKEN = "" # TODO API token generated in NetBox
 
 # Site, device roles and types defined in NetBox
 site_id = 0
@@ -228,11 +228,11 @@ def connect_host(g_id, r_id, h_id):
     router_int_id = create_interface(f"int-g{g_id}-r{r_id}-h{h_id}", router_id)
     host_int_id = create_interface(f"int-g{g_id}-h{h_id}-r{r_id}", host_id)
 
-    create_cable(router_int_id, host_int_id, 10, price_per_meter=40, description="UGREEN RJ45 Cat.8 Ethernet", cable_type="cat8")
+    create_cable(router_int_id, host_int_id, 10, price_per_meter=360, description="MFS1S50-H010E", cable_type="aoc")
 
 
 # Connect two routers
-def connect_routers(g1_id, r1_id, g2_id, r2_id):
+def connect_routers(g1_id, r1_id, g2_id, r2_id, inter_group=False):
     # Make interfaces and connect them
     router1_id = routers[g1_id][r1_id]["id"]
     router2_id = routers[g2_id][r2_id]["id"]
@@ -240,7 +240,10 @@ def connect_routers(g1_id, r1_id, g2_id, r2_id):
     router1_int_id = create_interface(f"int-g{g1_id}-r{r1_id}-g{g2_id}-r{r2_id}", router1_id)
     router2_int_id = create_interface(f"int-g{g2_id}-r{r2_id}-g{g1_id}-r{r1_id}", router2_id)
 
-    create_cable(router1_int_id, router2_int_id, 50000, price_per_meter=383, description="Mellanox MFS1S50-H020V", cable_type="aoc")
+    if inter_group:
+        create_cable(router1_int_id, router2_int_id, 50000, price_per_meter=25, description="Mellanox MFS1S00-H150E", cable_type="aoc")
+    else:
+        create_cable(router1_int_id, router2_int_id, 100, price_per_meter=35, description="Mellanox MFS1S00-H100E", cable_type="aoc")
 
 
 def generate_dragonfly(p, a, h):
@@ -257,14 +260,14 @@ def generate_dragonfly(p, a, h):
 
             # Connect router within a group
             for r2_id in range(r_id):
-                connect_routers(g_id, r_id, g_id, r2_id)
+                connect_routers(g_id, r_id, g_id, r2_id, inter_group=False)
 
             # Connect router to specific routers in previous groups
             for g2_id in range(r_id * h, min((r_id + 1) * h, g_id)):
                 if g2_id >= g_id:
                     g2_id += 1
 
-                connect_routers(g_id, r_id, g2_id, (g_id - 1) // h)
+                connect_routers(g_id, r_id, g2_id, (g_id - 1) // h, inter_group=True)
 
             # Create and connect router's hosts
             for h_id in range(p):
@@ -281,7 +284,7 @@ def setup_models():
     host_role_id = create_device_role("Host", "host")
     nvidia_id = create_manufacturer("Mellanox", "Nvidia")
     dell_id = create_manufacturer("Dell", "Dell")
-    router_device_type_id = create_device_type("Mellanox MQM8790-HS2F", "Router_Mellanos_MQM8790", nvidia_id, 71472) # US$18,344.00
+    router_device_type_id = create_device_type("Mellanox MQM8790-HS2F", "Router_Mellanox_MQM8790", nvidia_id, 71472) # US$18,344.00
     host_device_type_id = create_device_type("Dell PowerEdge R450", "Host_Dell_PowerEdge", dell_id, 21000)
 
 
