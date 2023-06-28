@@ -44,4 +44,24 @@ Using `--costs` flag it is possible to calculate the costs of the generated topo
 To use the above script, it is required to fill the Netbox API token in `NETBOX_TOKEN` environtment variable and if needed, change the `NETBOX_URL` variable in the script.
 
 ## Scalability analysis
-TODO
+Scalability analysis was performed based on price of building network from below devices:
+
+Devices:
+
+|        | Name                  | Price     |
+|--------|-----------------------|-----------|
+| Router | Mellanox MQM8790-HS2F | 71472 PLN |
+| Host   | Dell PowerEdge R450   | 21000 PLN |
+
+Connections:
+
+|             | Name                   | Price/m | Length |
+|-------------|------------------------|---------|--------|
+| Inter-group | Mellanox MFS1S00-H150E | 25 PLN  | 50 km  |
+| Intra-group | Mellanox MFS1S00-H100E | 35 PLN  | 100 m  |
+| Host        | MFS1S50-H010E          | 360 PLN | 10 m   |
+
+![Plot sum of costs of routers amount](plots/sum_of_cost_from_routers.png)
+![Plot sum of costs of channels amount](plots/sum_of_cost_from_channels.png)
+
+On above plots we can see that cost of the network grows exponentially with the size of the network.

@@ -15,7 +15,7 @@ def generate_plot(file, x_axis):
     df['total_cost'] = df['cable_cost'] + df['host_cost'] + df['router_cost']
 
     plt.bar(df[x_axis], df['total_cost'])
-    plt.xlabel('Routers')
+    plt.xlabel(x_axis)
     plt.ylabel('Total Cost [PLN]')
     plt.title('Sum of costs while increasing ' + x_axis)
     plt.savefig('plots/sum_of_cost_from_{}.png'.format(x_axis))
