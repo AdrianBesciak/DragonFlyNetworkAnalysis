@@ -1,11 +1,11 @@
 hosts+routers+channels+cost
-2+5+1+{'cable_cost': 1436274000, 'host_cost': 1260000, 'router_cost': 2144160}
-2+5+2+{'cable_cost': 3159794000, 'host_cost': 2310000, 'router_cost': 3930960}
-2+5+3+{'cable_cost': 5362064000, 'host_cost': 3360000, 'router_cost': 5717760}
-2+5+4+{'cable_cost': 8043084000, 'host_cost': 4410000, 'router_cost': 7504560}
-2+5+5+{'cable_cost': 11202854000, 'host_cost': 5460000, 'router_cost': 9291360}
-2+5+6+{'cable_cost': 13558316800, 'host_cost': 6510000, 'router_cost': 11078160}
-2+5+7+{'cable_cost': 13558316800, 'host_cost': 7560000, 'router_cost': 12864960}
-2+5+8+{'cable_cost': 13558316800, 'host_cost': 8610000, 'router_cost': 14651760}
-2+5+9+{'cable_cost': 13558316800, 'host_cost': 9660000, 'router_cost': 16438560}
-2+5+10+{'cable_cost': 13558316800, 'host_cost': 10710000, 'router_cost': 18225360}
+2+5+1+{'cable_cost': 19176000, 'host_cost': 1260000, 'router_cost': 2144160}
+2+5+2+{'cable_cost': 69531000, 'host_cost': 2310000, 'router_cost': 3930960}
+2+5+3+{'cable_cost': 151136000, 'host_cost': 3360000, 'router_cost': 5717760}
+2+5+4+{'cable_cost': 263991000, 'host_cost': 4410000, 'router_cost': 7504560}
+2+5+5+{'cable_cost': 408096000, 'host_cost': 5460000, 'router_cost': 9291360}
+2+5+6+{'cable_cost': 583451000, 'host_cost': 6510000, 'router_cost': 11078160}
+2+5+7+{'cable_cost': 790056000, 'host_cost': 7560000, 'router_cost': 12864960}
+2+5+8+{'cable_cost': 1027911000, 'host_cost': 8610000, 'router_cost': 14651760}
+2+5+9+{'cable_cost': 1297016000, 'host_cost': 9660000, 'router_cost': 16438560}
+2+5+10+{'cable_cost': 1597371000, 'host_cost': 10710000, 'router_cost': 18225360}

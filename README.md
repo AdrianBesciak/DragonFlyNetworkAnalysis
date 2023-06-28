@@ -41,7 +41,7 @@ The `--setup` flag should be used when generating the topology for the first tim
 
 Using `--costs` flag it is possible to calculate the costs of the generated topology, grouped by routers, hosts and cables.
 
-To use the above script, it is required to fill the Netbox API token in `NETBOX_TOKEN` variable in the script and if needed, change the `NETBOX_URL`.
+To use the above script, it is required to fill the Netbox API token in `NETBOX_TOKEN` environtment variable and if needed, change the `NETBOX_URL` variable in the script.
 
 ## Scalability analysis
 TODO

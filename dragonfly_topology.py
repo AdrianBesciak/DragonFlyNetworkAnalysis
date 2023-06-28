@@ -3,12 +3,14 @@ import argparse
 import string
 import random
 import sys
+import os
 
 # NetBox API settings
 NETBOX_URL = "http://127.0.0.1"
 
-# from generatedNetboxToken import NETBOX_TOKEN
-NETBOX_TOKEN = "" # TODO API token generated in NetBox
+NETBOX_TOKEN = os.getenv("NETBOX_TOKEN") # API token generated in NetBox
+if NETBOX_TOKEN is None:
+    from generatedNetboxToken import NETBOX_TOKEN
 
 # Site, device roles and types defined in NetBox
 site_id = 0
@@ -56,11 +58,11 @@ def netbox_get(name, path, query = ""):
 
 
 def get_cable_list():
-    return netbox_get("cables", "/api/dcim/cables/?site=dragonfly-site&limit=1000")
+    return netbox_get("cables", "/api/dcim/cables/?site=dragonfly-site&limit=10000")
 
 
 def get_device_list():
-    return netbox_get("devices", "/api/dcim/devices/?site=dragonfly-site&limit=1000")
+    return netbox_get("devices", "/api/dcim/devices/?site=dragonfly-site&limit=10000")
 
 
 def get_device_types():
