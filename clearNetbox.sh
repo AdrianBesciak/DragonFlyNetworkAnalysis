@@ -14,8 +14,10 @@ python3 /opt/netbox/netbox/manage.py createsuperuser --noinput
 systemctl restart netbox netbox-rq
 
 #Generate api endpoint
-curl -X POST -H "Content-Type: application/json" -H "Accept: application/json; indent=4" http://127.0.0.1/api/users/tokens/provision/ --data '{
+sleep 3
+KEY=`curl -X POST -H "Content-Type: application/json" -H "Accept: application/json; indent=4" http://127.0.0.1/api/users/tokens/provision/ --data '{
     "username": "admin",
     "password": "admin"
-}' | grep "key" | cut -d':' -f2
+}' | grep "key" | cut -d':' -f2`
 
+echo 'NETBOX_TOKEN =' $KEY > generatedNetboxToken.py

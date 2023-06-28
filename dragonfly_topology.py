@@ -5,8 +5,10 @@ import random
 import sys
 
 # NetBox API settings
-NETBOX_URL = "http://127.0.0.1:8000"
-NETBOX_TOKEN = "" # TODO API token generated in NetBox
+NETBOX_URL = "http://127.0.0.1"
+
+from generatedNetboxToken import NETBOX_TOKEN
+#NETBOX_TOKEN = "" # TODO API token generated in NetBox
 
 # Site, device roles and types defined in NetBox
 site_id = 0
@@ -238,7 +240,7 @@ def connect_routers(g1_id, r1_id, g2_id, r2_id):
     router1_int_id = create_interface(f"int-g{g1_id}-r{r1_id}-g{g2_id}-r{r2_id}", router1_id)
     router2_int_id = create_interface(f"int-g{g2_id}-r{r2_id}-g{g1_id}-r{r1_id}", router2_id)
 
-    create_cable(router1_int_id, router2_int_id, 1000, price_per_meter=3968, description="Mellanox MFS1S50-H020V", cable_type="aoc")
+    create_cable(router1_int_id, router2_int_id, 50000, price_per_meter=383, description="Mellanox MFS1S50-H020V", cable_type="aoc")
 
 
 def generate_dragonfly(p, a, h):
