@@ -7,6 +7,10 @@ Project presents creation of a large-scale dragonfly network model in NetBox too
 
 Topology introduced in cooperation with Google to create a highly-scalable, low-latency and low-cost networks between data centers. It focuses on minimizing the number and length of interconenction cables, which can otherwise dominate the network costs. Nodes are connected to routers gathered into groups in which they are densely connected. Each group has a minimum of one connection to every other. As a result, a maximum of one inter-group connection has to be used to route a packet between any two nodes.
 
+![Dragonfly topology example](plots/dragonfly_topology.png)
+
+The [above graph](https://www.researchgate.net/figure/Sample-Dragonfly-topology-with-h2-p2-a4-36-routers-and-72-compute-nodes_fig2_261313973) presents the topology with 9 groups, 4 routers in each group, 2 channels and 2 hosts (nodes) per router.
+
 ## [NetBox simulation tool](https://docs.netbox.dev/en/stable/introduction/)
 
 NetBox is an open source tool for modeling and documenting modern networks. It provides a wide assortment of objects to allow creating infrastructure desing and document network starting from cabling, to IP address managements.
@@ -43,6 +47,14 @@ Using `--costs` flag it is possible to calculate the costs of the generated topo
 
 To use the above script, it is required to fill the Netbox API token in `NETBOX_TOKEN` environtment variable and if needed, change the `NETBOX_URL` variable in the script.
 
+### Example usage
+
+The following code generates the topology presented on the graph above. It also sets up the initial settings (`--setup` flag).
+
+```bash
+NETBOX_TOKEN=[token] python dragonfly_topology.py --setup --hosts 2 --routers 4 --channels 2
+```
+
 ## Scalability analysis
 Scalability analysis was performed based on price of building network from below devices:
 
@@ -64,4 +76,4 @@ Connections:
 ![Plot sum of costs of routers amount](plots/sum_of_cost_from_routers.png)
 ![Plot sum of costs of channels amount](plots/sum_of_cost_from_channels.png)
 
-On above plots we can see that cost of the network grows exponentially with the size of the network.
+On above plots we can see that cost of the network grows exponentially with the size of the network, but the factor is much lower than for fully connected topologies.
