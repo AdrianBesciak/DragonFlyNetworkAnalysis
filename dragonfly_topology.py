@@ -168,7 +168,7 @@ def create_device(name, type_id, role_id):
 def create_interface(name, device_id):
     interface = {
         "name": name,
-        "type": "1000base-t",
+        "type": "200gbase-x-qsfp56",
         "device": device_id,
     }
 
