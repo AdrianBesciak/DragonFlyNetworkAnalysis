@@ -27,7 +27,7 @@ To configure the NetBox tool, it is recommended to use a `netbox-docker` project
 ## Generator script usage
 
 The `dragonfly_topology.py` Python script can be used as follows:
-```bash
+```console
 dragonfly_topology.py [-h] [--setup] [--hosts HOSTS] [--routers ROUTERS] [--channels CHANNELS] [--costs]
 
 options:
