@@ -2,31 +2,27 @@ import pandas as pd
 import json
 import matplotlib.pyplot as plt
 
-# Define the file path
-file_path = "measurements/changing_routers_no.csv"
 
-# Define the column names
-column_names = ["hosts", "routers", "channels", "cost"]
+def generate_plot(file, x_axis):
+    df = pd.read_csv(file, delimiter='+')
 
-# Load the CSV file into a DataFrame
-df = pd.read_csv(file_path, delimiter='+')
+    cost_data = pd.json_normalize(df["cost"].apply(json.loads))
+    df = pd.concat([df, cost_data], axis=1)
+    df.drop("cost", axis=1, inplace=True)
 
-# Extract cost column into separate columns
-# cost_data = df["cost"].apply(lambda x: print(pd.read_json(x,  orient='index').transpose()))# pd.Series(pd.read_json(x)))
-cost_data = pd.json_normalize(df["cost"].apply(json.loads))
-df = pd.concat([df, cost_data], axis=1)
+    print(df)
 
-# # Remove the original cost column
-df.drop("cost", axis=1, inplace=True)
+    df['total_cost'] = df['cable_cost'] + df['host_cost'] + df['router_cost']
 
-# Print the resulting DataFrame
-print(df)
+    plt.bar(df[x_axis], df['total_cost'])
+    plt.xlabel('Routers')
+    plt.ylabel('Total Cost [PLN]')
+    plt.title('Sum of costs while increasing ' + x_axis)
+    plt.savefig('plots/sum_of_cost_from_{}.png'.format(x_axis))
+    plt.show()
 
-df['total_cost'] = df['cable_cost'] + df['host_cost'] + df['router_cost']
 
-# Plot the sum of costs
-plt.bar(df['routers'], df['total_cost'])
-plt.xlabel('Routers')
-plt.ylabel('Total Cost')
-plt.title('Sum of Costs from Routers')
-plt.show()
+routers_data_file_path = "measurements/changing_routers_no.csv"
+channels_data_file_path = "measurements/changing_channels_no.csv"
+generate_plot(routers_data_file_path, 'routers')
+generate_plot(channels_data_file_path, 'channels')
