@@ -6,7 +6,7 @@ import sys
 import os
 
 # NetBox API settings
-NETBOX_URL = "http://127.0.0.1"
+NETBOX_URL = "http://127.0.0.1:8000"
 
 NETBOX_TOKEN = os.getenv("NETBOX_TOKEN") # API token generated in NetBox
 if NETBOX_TOKEN is None:
