@@ -3,7 +3,7 @@ import json
 import matplotlib.pyplot as plt
 
 
-def generate_plot(file, x_axis):
+def generate_plot(file, x_axis, params):
     df = pd.read_csv(file, delimiter='+')
 
     cost_data = pd.json_normalize(df["cost"].apply(json.loads))
@@ -17,12 +17,12 @@ def generate_plot(file, x_axis):
     plt.bar(df[x_axis], df['total_cost'])
     plt.xlabel(x_axis)
     plt.ylabel('Total Cost [PLN]')
-    plt.title('Sum of costs while increasing ' + x_axis)
+    plt.title(f'Sum of costs while increasing {x_axis} number\n{params}')
     plt.savefig('plots/sum_of_cost_from_{}.png'.format(x_axis))
     plt.show()
 
 
 routers_data_file_path = "measurements/changing_routers_no.csv"
 channels_data_file_path = "measurements/changing_channels_no.csv"
-generate_plot(routers_data_file_path, 'routers')
-generate_plot(channels_data_file_path, 'channels')
+generate_plot(routers_data_file_path, 'routers', '2 hosts, 1 channel')
+generate_plot(channels_data_file_path, 'channels', '2 hosts, 5 routers')
