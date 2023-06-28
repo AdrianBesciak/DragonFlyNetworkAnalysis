@@ -74,6 +74,8 @@ Connections:
 | Host        | MFS1S50-H010E          | 360 PLN | 10 m   |
 
 ![Plot sum of costs of routers amount](plots/sum_of_cost_from_routers.png)
+![Plot sum of costs of routers amount per items](plots/sum_of_cost_from_routers_per.png)
 ![Plot sum of costs of channels amount](plots/sum_of_cost_from_channels.png)
+![Plot sum of costs of channels amount per items](plots/sum_of_cost_from_channels_per.png)
 
-On above plots we can see that cost of the network grows exponentially with the size of the network, but the factor is much lower than for fully connected topologies.
+On above plots we can see that cost of the network grows exponentially with the size of the network, but the factor is much lower than for fully connected topologies. The vast majority of the topology costs is cabling. When modifying channels number, the hosts and routers number grows linearly.
