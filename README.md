@@ -9,7 +9,7 @@ Topology introduced in cooperation with Google to create a highly-scalable, low-
 
 ![Dragonfly topology example](plots/dragonfly_topology.png)
 
-The [above graph](https://www.researchgate.net/figure/Sample-Dragonfly-topology-with-h2-p2-a4-36-routers-and-72-compute-nodes_fig2_261313973) presents the topology with 9 groups, 4 routers in each group, 2 channels and 2 hosts (nodes) per router.
+The [above graph](https://www.researchgate.net/figure/Sample-Dragonfly-topology-with-h2-p2-a4-36-routers-and-72-compute-nodes_fig2_261313973) presents the topology with 9 groups, 4 routers in each group, 2 channels (inter-group connections per router) and 2 hosts (nodes) per router.
 
 ## [NetBox simulation tool](https://docs.netbox.dev/en/stable/introduction/)
 
